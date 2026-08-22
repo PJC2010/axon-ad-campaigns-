@@ -1,0 +1,31 @@
+# Fly.io app config. app name and primary_region are filled in at deploy time
+# (see the deploy steps in the session) — placeholders here until then.
+app = "axon-ad-campaigns"
+primary_region = "iad"
+
+[build]
+
+[env]
+  DATA_DIR = "/data"
+  PORT = "3000"
+  HOSTNAME = "0.0.0.0"
+
+[[mounts]]
+  source = "axon_data"
+  destination = "/data"
+
+# Single always-on machine: SQLite + a locally-mounted volume are not safe to
+# run behind more than one concurrent machine.
+[http_service]
+  internal_port = 3000
+  force_https = true
+  auto_stop_machines = false
+  auto_start_machines = true
+  min_machines_running = 1
+
+  [[http_service.checks]]
+    interval = "15s"
+    timeout = "5s"
+    grace_period = "10s"
+    method = "GET"
+    path = "/api/health"
