@@ -4,6 +4,7 @@ import { use, useCallback, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Layers, Pencil, Plus, Trash2, Users } from "lucide-react";
 import { CampaignPerformance } from "@/components/insights/CampaignPerformance";
+import { ExportTab } from "@/components/builder/ExportTab";
 import { TopBar } from "@/components/layout/TopBar";
 import { StatusPill } from "@/components/data/StatusPill";
 import { Badge } from "@/components/ui/Badge";
@@ -267,13 +268,7 @@ export default function CampaignDetailPage({ params }: PageProps<"/campaigns/[id
 
       {tab === "performance" ? <CampaignPerformance campaignId={tree.id} /> : null}
 
-      {tab === "export" ? (
-        <EmptyState
-          icon={Layers}
-          title="Export lands with the bulk-export phase"
-          hint="You will download a Meta Ads Manager import sheet plus the attached creative files."
-        />
-      ) : null}
+      {tab === "export" ? <ExportTab campaignId={tree.id} /> : null}
 
       <Drawer
         open={editCampaign}

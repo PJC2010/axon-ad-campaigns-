@@ -55,6 +55,7 @@ export default function ImportPage() {
       <TopBar title="Import data" subtitle="Bring performance metrics in from Meta" />
       <div className="space-y-6">
         <CsvImportCard onImported={() => setJobsVersion((v) => v + 1)} />
+        <SyncCard onSynced={() => setJobsVersion((v) => v + 1)} />
         <ManualMetricCard />
         <ImportJobsCard version={jobsVersion} onChanged={() => setJobsVersion((v) => v + 1)} />
       </div>
@@ -539,6 +540,114 @@ function ManualMetricCard() {
         <Button variant="primary" disabled={!canSubmit || busy} onClick={() => void submit()}>
           {busy ? "Saving…" : "Save metrics"}
         </Button>
+      </div>
+    </Card>
+  );
+}
+
+interface SyncStatusPayload {
+  configured: boolean;
+  lastRun: {
+    started_at: string;
+    finished_at: string | null;
+    status: string;
+    since: string | null;
+    until: string | null;
+    rows_upserted: number;
+    error: string | null;
+  } | null;
+}
+
+function SyncCard({ onSynced }: { onSynced: () => void }) {
+  const [status, setStatus] = useState<SyncStatusPayload | null>(null);
+  const [running, setRunning] = useState(false);
+  const [message, setMessage] = useState<string | null>(null);
+  const [error, setError] = useState<string | null>(null);
+
+  const reload = useCallback(() => {
+    apiFetch<SyncStatusPayload>("/api/sync")
+      .then(setStatus)
+      .catch(() => {});
+  }, []);
+
+  useEffect(reload, [reload]);
+
+  async function run() {
+    setRunning(true);
+    setMessage(null);
+    setError(null);
+    try {
+      const res = await apiFetch<{
+        configured: boolean;
+        message?: string;
+        result?: { since: string; until: string; rowsUpserted: number; ads: number };
+      }>("/api/sync", { method: "POST", body: JSON.stringify({}) });
+      if (!res.configured) {
+        setError(res.message ?? "Sync is not configured");
+      } else if (res.result) {
+        setMessage(
+          `Synced ${res.result.rowsUpserted} daily rows across ${res.result.ads} ads (${res.result.since} to ${res.result.until})`,
+        );
+        onSynced();
+      }
+      reload();
+    } catch (e) {
+      setError(e instanceof ApiError ? e.message : "Sync failed");
+      reload();
+    } finally {
+      setRunning(false);
+    }
+  }
+
+  return (
+    <Card>
+      <CardHeader
+        title="Meta API sync"
+        subtitle="Pull entities and daily ad-level insights straight from the Marketing API"
+        actions={
+          status?.configured ? (
+            <Button variant="primary" size="sm" onClick={() => void run()} disabled={running}>
+              <Icon icon={RefreshCw} size={14} className={running ? "animate-spin" : undefined} />
+              {running ? "Syncing…" : "Run sync"}
+            </Button>
+          ) : null
+        }
+      />
+      <div className="px-5 py-4 text-[13px]">
+        {!status ? (
+          <p className="text-faint">Checking configuration…</p>
+        ) : !status.configured ? (
+          <p className="text-muted">
+            Not configured. Set <code className="numeric">META_ACCESS_TOKEN</code> and{" "}
+            <code className="numeric">META_AD_ACCOUNT_ID</code> in <code className="numeric">.env</code>{" "}
+            (see .env.example), restart the app, and this card lights up. Until then, CSV import
+            covers the same data.
+          </p>
+        ) : (
+          <div className="space-y-1.5">
+            <p className="flex items-center gap-2">
+              <Badge tone="positive">Connected</Badge>
+              {status.lastRun ? (
+                <span className="text-muted">
+                  Last run {status.lastRun.status === "ok" ? "succeeded" : status.lastRun.status}
+                  {status.lastRun.until ? ` · through ${status.lastRun.until}` : ""}
+                  {status.lastRun.status === "ok"
+                    ? ` · ${status.lastRun.rows_upserted} rows`
+                    : ""}
+                </span>
+              ) : (
+                <span className="text-muted">
+                  Never run — the first sync pulls the last 60 days.
+                </span>
+              )}
+            </p>
+            {status.lastRun?.error ? (
+              <p className="text-negative">{status.lastRun.error}</p>
+            ) : null}
+          </div>
+        )}
+        {message ? <p className="mt-2 text-positive">{message}</p> : null}
+        {error ? <p className="mt-2 text-negative">{error}</p> : null}
       </div>
     </Card>
   );
