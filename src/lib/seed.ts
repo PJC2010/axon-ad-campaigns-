@@ -292,7 +292,9 @@ export function seed(db: DB, uploadsDir: string, days = 60): SeedResult {
       cvr: 0.08,
       aovCents: 0,
       cpmCents: 700,
-      cpmDrift: 45, // recent CPM creep: last week lands ~1.35x the week before
+      // Recent CPM creep, steep enough that the whole campaign's blended CPM
+      // (this ad + the steady walkthrough ad) still jumps >=1.3x week over week.
+      cpmDrift: 85,
       freq0: 1.4,
       freqDrift: 0.005,
     },
