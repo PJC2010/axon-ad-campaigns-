@@ -2,15 +2,8 @@
 
 import { use, useCallback, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import {
-  CalendarRange,
-  Layers,
-  MapPin,
-  Pencil,
-  Plus,
-  Trash2,
-  Users,
-} from "lucide-react";
+import { Layers, Pencil, Plus, Trash2, Users } from "lucide-react";
+import { CampaignPerformance } from "@/components/insights/CampaignPerformance";
 import { TopBar } from "@/components/layout/TopBar";
 import { StatusPill } from "@/components/data/StatusPill";
 import { Badge } from "@/components/ui/Badge";
@@ -272,13 +265,7 @@ export default function CampaignDetailPage({ params }: PageProps<"/campaigns/[id
         </div>
       ) : null}
 
-      {tab === "performance" ? (
-        <EmptyState
-          icon={CalendarRange}
-          title="Performance lands with the metrics phase"
-          hint="Import data or run the seed script, then this tab shows the campaign's trends and breakdowns."
-        />
-      ) : null}
+      {tab === "performance" ? <CampaignPerformance campaignId={tree.id} /> : null}
 
       {tab === "export" ? (
         <EmptyState
