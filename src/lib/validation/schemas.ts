@@ -167,6 +167,11 @@ export const manualMetricInput = z
     }
   });
 
+export const creativePatch = z.object({
+  original_name: z.string().trim().min(1).max(200).optional(),
+  tags: z.array(z.string().trim().min(1).max(40)).max(20).optional(),
+});
+
 export type CampaignCreateInput = z.infer<typeof campaignCreate>;
 export type CampaignPatchInput = z.infer<typeof campaignPatch>;
 export type AdSetCreateInput = z.infer<typeof adSetCreate>;

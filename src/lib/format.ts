@@ -40,6 +40,20 @@ export function formatRatio(n: number | null | undefined, digits = 2): string {
   return `${n.toFixed(digits)}×`;
 }
 
+/** Form input ("12.50", "$1,200") -> integer cents, or null when empty/invalid. */
+export function dollarsToCents(v: string | number | null | undefined): number | null {
+  if (v == null || v === "") return null;
+  const n = typeof v === "number" ? v : Number(String(v).replace(/[$,\s]/g, ""));
+  if (!Number.isFinite(n) || n < 0) return null;
+  return Math.round(n * 100);
+}
+
+/** Integer cents -> editable dollars string ("12.5" -> "12.50", null -> ""). */
+export function centsToDollarInput(cents: number | null | undefined): string {
+  if (cents == null) return "";
+  return (cents / 100).toFixed(2).replace(/\.00$/, "");
+}
+
 /** '2026-08-04' -> 'Aug 4' (display only). */
 export function formatDay(date: string): string {
   const [y, m, d] = date.split("-").map(Number);
