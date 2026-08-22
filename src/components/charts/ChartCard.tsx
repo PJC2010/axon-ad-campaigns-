@@ -1,7 +1,17 @@
 "use client";
 
-import { useEffect, useState, type ReactNode } from "react";
+import { useSyncExternalStore, type ReactNode } from "react";
 import { Card, CardHeader } from "@/components/ui/Card";
+
+const emptySubscribe = () => () => {};
+/** True after hydration, false during SSR — the lint-clean mount gate. */
+function useMounted(): boolean {
+  return useSyncExternalStore(
+    emptySubscribe,
+    () => true,
+    () => false,
+  );
+}
 
 /**
  * Chart container: fixed-height body (ResponsiveContainer needs a sized parent)
@@ -20,8 +30,7 @@ export function ChartCard({
   children: ReactNode;
   height?: number;
 }) {
-  const [mounted, setMounted] = useState(false);
-  useEffect(() => setMounted(true), []);
+  const mounted = useMounted();
   return (
     <Card>
       <CardHeader title={title} subtitle={subtitle} actions={actions} />

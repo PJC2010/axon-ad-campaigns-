@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 import { clsx } from "clsx";
 import { X } from "lucide-react";
 import { Button } from "@/components/ui/Button";
@@ -37,11 +37,7 @@ const AGE_OPTIONS = Array.from({ length: 48 }, (_, i) => 18 + i);
 
 export function AdSetForm({
   open,
-  campaignId,
-  campaignIsCbo,
-  initial,
-  onClose,
-  onSaved,
+  ...props
 }: {
   open: boolean;
   campaignId: number;
@@ -50,51 +46,56 @@ export function AdSetForm({
   onClose: () => void;
   onSaved: (adSet: AdSet) => void;
 }) {
-  const [name, setName] = useState("");
-  const [status, setStatus] = useState<AdSet["status"]>("DRAFT");
-  const [budgetType, setBudgetType] = useState<"daily" | "lifetime">("daily");
-  const [budget, setBudget] = useState("");
-  const [startTime, setStartTime] = useState("");
-  const [endTime, setEndTime] = useState("");
-  const [countries, setCountries] = useState<string[]>([]);
-  const [ageMin, setAgeMin] = useState(18);
-  const [ageMax, setAgeMax] = useState(65);
-  const [genders, setGenders] = useState<AdSet["genders"]>("all");
-  const [interests, setInterests] = useState<string[]>([]);
+  // Mount the form fresh on every open (keyed by what's being edited) so the
+  // field state initializes straight from props — no sync-in-effect needed.
+  if (!open) return null;
+  return <AdSetFormFields key={props.initial?.id ?? "new"} {...props} />;
+}
+
+function AdSetFormFields({
+  campaignId,
+  campaignIsCbo,
+  initial,
+  onClose,
+  onSaved,
+}: {
+  campaignId: number;
+  campaignIsCbo: boolean;
+  initial?: AdSet | null;
+  onClose: () => void;
+  onSaved: (adSet: AdSet) => void;
+}) {
+  const [name, setName] = useState(initial?.name ?? "");
+  const [status, setStatus] = useState<AdSet["status"]>(initial?.status ?? "DRAFT");
+  const [budgetType, setBudgetType] = useState<"daily" | "lifetime">(
+    initial?.budget_type ?? "daily",
+  );
+  const [budget, setBudget] = useState(centsToDollarInput(initial?.budget_cents));
+  const [startTime, setStartTime] = useState(initial?.start_time ?? "");
+  const [endTime, setEndTime] = useState(initial?.end_time ?? "");
+  const [countries, setCountries] = useState<string[]>(initial?.countries ?? []);
+  const [ageMin, setAgeMin] = useState(initial?.age_min ?? 18);
+  const [ageMax, setAgeMax] = useState(initial?.age_max ?? 65);
+  const [genders, setGenders] = useState<AdSet["genders"]>(initial?.genders ?? "all");
+  const [interests, setInterests] = useState<string[]>(initial?.interests ?? []);
   const [interestDraft, setInterestDraft] = useState("");
-  const [placementType, setPlacementType] = useState<AdSet["placement_type"]>("advantage_plus");
-  const [placements, setPlacements] = useState<string[]>([]);
-  const [optimizationGoal, setOptimizationGoal] = useState<AdSet["optimization_goal"]>("LINK_CLICKS");
-  const [billingEvent, setBillingEvent] = useState<AdSet["billing_event"]>("IMPRESSIONS");
-  const [bidStrategy, setBidStrategy] = useState<AdSet["bid_strategy"]>("LOWEST_COST_WITHOUT_CAP");
-  const [bidAmount, setBidAmount] = useState("");
+  const [placementType, setPlacementType] = useState<AdSet["placement_type"]>(
+    initial?.placement_type ?? "advantage_plus",
+  );
+  const [placements, setPlacements] = useState<string[]>(initial?.placements ?? []);
+  const [optimizationGoal, setOptimizationGoal] = useState<AdSet["optimization_goal"]>(
+    initial?.optimization_goal ?? "LINK_CLICKS",
+  );
+  const [billingEvent, setBillingEvent] = useState<AdSet["billing_event"]>(
+    initial?.billing_event ?? "IMPRESSIONS",
+  );
+  const [bidStrategy, setBidStrategy] = useState<AdSet["bid_strategy"]>(
+    initial?.bid_strategy ?? "LOWEST_COST_WITHOUT_CAP",
+  );
+  const [bidAmount, setBidAmount] = useState(centsToDollarInput(initial?.bid_amount_cents));
   const [errors, setErrors] = useState<FieldErrors>({});
   const [formError, setFormError] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
-
-  useEffect(() => {
-    if (!open) return;
-    setName(initial?.name ?? "");
-    setStatus(initial?.status ?? "DRAFT");
-    setBudgetType(initial?.budget_type ?? "daily");
-    setBudget(centsToDollarInput(initial?.budget_cents));
-    setStartTime(initial?.start_time ?? "");
-    setEndTime(initial?.end_time ?? "");
-    setCountries(initial?.countries ?? []);
-    setAgeMin(initial?.age_min ?? 18);
-    setAgeMax(initial?.age_max ?? 65);
-    setGenders(initial?.genders ?? "all");
-    setInterests(initial?.interests ?? []);
-    setInterestDraft("");
-    setPlacementType(initial?.placement_type ?? "advantage_plus");
-    setPlacements(initial?.placements ?? []);
-    setOptimizationGoal(initial?.optimization_goal ?? "LINK_CLICKS");
-    setBillingEvent(initial?.billing_event ?? "IMPRESSIONS");
-    setBidStrategy(initial?.bid_strategy ?? "LOWEST_COST_WITHOUT_CAP");
-    setBidAmount(centsToDollarInput(initial?.bid_amount_cents));
-    setErrors({});
-    setFormError(null);
-  }, [open, initial]);
 
   const needsBidAmount = bidStrategy === "COST_CAP" || bidStrategy === "BID_CAP";
   const availableCountries = useMemo(
@@ -169,7 +170,7 @@ export function AdSetForm({
 
   return (
     <Drawer
-      open={open}
+      open
       onClose={onClose}
       title={initial ? "Edit ad set" : "New ad set"}
       subtitle="Audience, budget, placements, and delivery"

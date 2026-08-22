@@ -31,12 +31,21 @@ export function CampaignPerformance({ campaignId }: { campaignId: number }) {
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    setError(null);
+    let cancelled = false;
     apiFetch<CampaignInsightsPayload>(
       `/api/campaigns/${campaignId}/insights?from=${range.from}&to=${range.to}`,
     )
-      .then(setData)
-      .catch(() => setError("Could not load campaign performance"));
+      .then((d) => {
+        if (cancelled) return;
+        setData(d);
+        setError(null);
+      })
+      .catch(() => {
+        if (!cancelled) setError("Could not load campaign performance");
+      });
+    return () => {
+      cancelled = true;
+    };
   }, [campaignId, range]);
 
   if (error) return <p className="text-sm text-negative">{error}</p>;

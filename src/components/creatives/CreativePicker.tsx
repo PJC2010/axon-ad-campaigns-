@@ -13,11 +13,7 @@ import { CreativeThumb } from "./CreativeThumb";
 
 export function CreativePicker({
   open,
-  onClose,
-  onPick,
-  max,
-  kindFilter,
-  initialSelected = [],
+  ...props
 }: {
   open: boolean;
   onClose: () => void;
@@ -27,21 +23,42 @@ export function CreativePicker({
   kindFilter?: "image" | "video";
   initialSelected?: number[];
 }) {
+  // Mount fresh on every open so selection and search reset naturally.
+  if (!open) return null;
+  return <CreativePickerPanel {...props} />;
+}
+
+function CreativePickerPanel({
+  onClose,
+  onPick,
+  max,
+  kindFilter,
+  initialSelected = [],
+}: {
+  onClose: () => void;
+  onPick: (creatives: Creative[]) => void;
+  max: number;
+  kindFilter?: "image" | "video";
+  initialSelected?: number[];
+}) {
   const [creatives, setCreatives] = useState<Creative[] | null>(null);
-  const [selected, setSelected] = useState<number[]>([]);
+  const [selected, setSelected] = useState<number[]>(() => initialSelected.slice(0, max));
   const [q, setQ] = useState("");
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    if (!open) return;
-    setSelected(initialSelected.slice(0, max));
-    setQ("");
-    setError(null);
+    let cancelled = false;
     apiFetch<{ creatives: Creative[] }>("/api/creatives")
-      .then((r) => setCreatives(r.creatives))
-      .catch(() => setError("Could not load the creative library"));
-    // eslint-disable-next-line react-hooks/exhaustive-deps -- reset only when opening
-  }, [open]);
+      .then((r) => {
+        if (!cancelled) setCreatives(r.creatives);
+      })
+      .catch(() => {
+        if (!cancelled) setError("Could not load the creative library");
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, []);
 
   const visible = useMemo(() => {
     if (!creatives) return [];
@@ -70,7 +87,7 @@ export function CreativePicker({
 
   return (
     <Drawer
-      open={open}
+      open
       onClose={onClose}
       title="Choose creatives"
       subtitle={max === 1 ? "Pick one from your library" : `Pick up to ${max}, in order`}

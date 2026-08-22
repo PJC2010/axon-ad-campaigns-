@@ -41,10 +41,19 @@ export default function DashboardPage() {
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    setError(null);
+    let cancelled = false;
     apiFetch<DashboardPayload>(`/api/dashboard?from=${range.from}&to=${range.to}`)
-      .then(setData)
-      .catch(() => setError("Could not load the dashboard"));
+      .then((d) => {
+        if (cancelled) return;
+        setData(d);
+        setError(null);
+      })
+      .catch(() => {
+        if (!cancelled) setError("Could not load the dashboard");
+      });
+    return () => {
+      cancelled = true;
+    };
   }, [range]);
 
   const empty = data != null && data.kpis.totals.impressions === 0 && data.kpis.totals.spend_cents === 0;

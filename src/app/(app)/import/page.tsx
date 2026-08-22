@@ -395,13 +395,18 @@ function ManualMetricCard() {
   }, []);
 
   useEffect(() => {
-    setTree(null);
-    setAdsetId("");
-    setAdId("");
     if (!campaignId) return;
+    let cancelled = false;
     apiFetch<{ campaign: CampaignTree }>(`/api/campaigns/${campaignId}?tree=1`)
-      .then((r) => setTree(r.campaign))
-      .catch(() => setError("Could not load the campaign structure"));
+      .then((r) => {
+        if (!cancelled) setTree(r.campaign);
+      })
+      .catch(() => {
+        if (!cancelled) setError("Could not load the campaign structure");
+      });
+    return () => {
+      cancelled = true;
+    };
   }, [campaignId]);
 
   const adSet = tree?.ad_sets.find((s) => String(s.id) === adsetId) ?? null;
@@ -460,7 +465,15 @@ function ManualMetricCard() {
           <Input type="date" value={date} max={todayStr()} onChange={(e) => setDate(e.target.value)} />
         </Field>
         <Field label="Campaign">
-          <Select value={campaignId} onChange={(e) => setCampaignId(e.target.value)}>
+          <Select
+            value={campaignId}
+            onChange={(e) => {
+              setCampaignId(e.target.value);
+              setTree(null);
+              setAdsetId("");
+              setAdId("");
+            }}
+          >
             <option value="">Choose…</option>
             {campaigns.map((c) => (
               <option key={c.id} value={c.id}>

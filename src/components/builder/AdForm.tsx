@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { Button } from "@/components/ui/Button";
 import { Drawer } from "@/components/ui/Drawer";
 import { Field } from "@/components/ui/Field";
@@ -25,10 +25,7 @@ function SectionLabel({ children }: { children: string }) {
 
 export function AdForm({
   open,
-  adsetId,
-  initial,
-  onClose,
-  onSaved,
+  ...props
 }: {
   open: boolean;
   adsetId: number;
@@ -36,41 +33,39 @@ export function AdForm({
   onClose: () => void;
   onSaved: (ad: Ad) => void;
 }) {
-  const [name, setName] = useState("");
-  const [status, setStatus] = useState<Ad["status"]>("DRAFT");
-  const [identityPage, setIdentityPage] = useState("");
-  const [identityInstagram, setIdentityInstagram] = useState("");
-  const [format, setFormat] = useState<Ad["format"]>("single_image");
-  const [primaryText, setPrimaryText] = useState("");
-  const [headline, setHeadline] = useState("");
-  const [description, setDescription] = useState("");
-  const [destinationUrl, setDestinationUrl] = useState("");
-  const [displayLink, setDisplayLink] = useState("");
-  const [cta, setCta] = useState<Ad["cta"]>("LEARN_MORE");
-  const [utmParams, setUtmParams] = useState("");
-  const [creatives, setCreatives] = useState<AdCreativeLink[]>([]);
+  // Mount fresh per open (keyed by the ad being edited) so field state
+  // initializes straight from props — no sync-in-effect needed.
+  if (!open) return null;
+  return <AdFormFields key={props.initial?.id ?? "new"} {...props} />;
+}
+
+function AdFormFields({
+  adsetId,
+  initial,
+  onClose,
+  onSaved,
+}: {
+  adsetId: number;
+  initial?: AdWithCreatives | null;
+  onClose: () => void;
+  onSaved: (ad: Ad) => void;
+}) {
+  const [name, setName] = useState(initial?.name ?? "");
+  const [status, setStatus] = useState<Ad["status"]>(initial?.status ?? "DRAFT");
+  const [identityPage, setIdentityPage] = useState(initial?.identity_page ?? "");
+  const [identityInstagram, setIdentityInstagram] = useState(initial?.identity_instagram ?? "");
+  const [format, setFormat] = useState<Ad["format"]>(initial?.format ?? "single_image");
+  const [primaryText, setPrimaryText] = useState(initial?.primary_text ?? "");
+  const [headline, setHeadline] = useState(initial?.headline ?? "");
+  const [description, setDescription] = useState(initial?.description ?? "");
+  const [destinationUrl, setDestinationUrl] = useState(initial?.destination_url ?? "");
+  const [displayLink, setDisplayLink] = useState(initial?.display_link ?? "");
+  const [cta, setCta] = useState<Ad["cta"]>(initial?.cta ?? "LEARN_MORE");
+  const [utmParams, setUtmParams] = useState(initial?.utm_params ?? "");
+  const [creatives, setCreatives] = useState<AdCreativeLink[]>(initial?.creatives ?? []);
   const [errors, setErrors] = useState<FieldErrors>({});
   const [formError, setFormError] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
-
-  useEffect(() => {
-    if (!open) return;
-    setName(initial?.name ?? "");
-    setStatus(initial?.status ?? "DRAFT");
-    setIdentityPage(initial?.identity_page ?? "");
-    setIdentityInstagram(initial?.identity_instagram ?? "");
-    setFormat(initial?.format ?? "single_image");
-    setPrimaryText(initial?.primary_text ?? "");
-    setHeadline(initial?.headline ?? "");
-    setDescription(initial?.description ?? "");
-    setDestinationUrl(initial?.destination_url ?? "");
-    setDisplayLink(initial?.display_link ?? "");
-    setCta(initial?.cta ?? "LEARN_MORE");
-    setUtmParams(initial?.utm_params ?? "");
-    setCreatives(initial?.creatives ?? []);
-    setErrors({});
-    setFormError(null);
-  }, [open, initial]);
 
   async function submit() {
     setSaving(true);
@@ -132,7 +127,7 @@ export function AdForm({
 
   return (
     <Drawer
-      open={open}
+      open
       onClose={onClose}
       title={initial ? "Edit ad" : "New ad"}
       subtitle="Identity, creative, and copy"
