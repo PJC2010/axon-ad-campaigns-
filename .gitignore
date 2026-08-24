@@ -40,8 +40,9 @@ yarn-error.log*
 *.tsbuildinfo
 next-env.d.ts
 
-# app data (local database + uploaded creatives)
-data/
+# app data (local database + uploaded creatives) — anchored to the repo root
+# so it never swallows source directories like src/components/data/
+/data/
 
 # local env
 .env
