@@ -1,0 +1,99 @@
+@import "tailwindcss";
+
+/* Axon design tokens — recreated from the axon-design brand cheatsheet.
+   Canvas is warm paper, text is ink, deep ocean is the signature accent,
+   and the data palette stays desaturated so charts read calmly. */
+:root {
+  --paper: #f7f4ee;
+  --surface: #fdfbf7;
+  --raised: #ffffff;
+  --ink: #16181d;
+  --muted: rgba(22, 24, 29, 0.62);
+  --faint: rgba(22, 24, 29, 0.42);
+  --hairline: rgba(22, 24, 29, 0.12);
+  --hairline-strong: rgba(22, 24, 29, 0.22);
+
+  --ocean: #1a5a75;
+  --ocean-deep: #134a61;
+  --ocean-wash: rgba(26, 90, 117, 0.08);
+
+  --moss: #6e8b67;
+  --data-ocean: #4b87a4;
+  --gold: #c2a14d;
+  --plum: #8a6489;
+  --rose: #c07a88;
+
+  --positive: #4e7f52;
+  --negative: #a85454;
+  --warn: #a97f2f;
+
+  /* Chart series palette — validated categorical order (dataviz six checks pass
+     on both surfaces). Assign by fixed order, never cycled or re-ranked. */
+  --chart-1: #2f7fae; /* ocean */
+  --chart-2: #a5822b; /* gold */
+  --chart-3: #94539b; /* plum */
+  --chart-4: #4e8348; /* moss */
+  --chart-5: #d06e87; /* rose */
+
+  --shadow-soft: 0 1px 2px rgba(50, 42, 28, 0.05), 0 4px 16px rgba(50, 42, 28, 0.07);
+  --shadow-pop: 0 2px 6px rgba(50, 42, 28, 0.08), 0 12px 32px rgba(50, 42, 28, 0.14);
+
+  --ease-standard: cubic-bezier(0.2, 0, 0, 1);
+  --ease-enter: cubic-bezier(0, 0, 0.2, 1);
+  --ease-exit: cubic-bezier(0.4, 0, 1, 1);
+}
+
+@theme inline {
+  --color-paper: var(--paper);
+  --color-surface: var(--surface);
+  --color-raised: var(--raised);
+  --color-ink: var(--ink);
+  --color-muted: var(--muted);
+  --color-faint: var(--faint);
+  --color-hairline: var(--hairline);
+  --color-hairline-strong: var(--hairline-strong);
+  --color-ocean: var(--ocean);
+  --color-ocean-deep: var(--ocean-deep);
+  --color-ocean-wash: var(--ocean-wash);
+  --color-moss: var(--moss);
+  --color-data-ocean: var(--data-ocean);
+  --color-gold: var(--gold);
+  --color-plum: var(--plum);
+  --color-rose: var(--rose);
+  --color-positive: var(--positive);
+  --color-negative: var(--negative);
+  --color-warn: var(--warn);
+  --color-chart-1: var(--chart-1);
+  --color-chart-2: var(--chart-2);
+  --color-chart-3: var(--chart-3);
+  --color-chart-4: var(--chart-4);
+  --color-chart-5: var(--chart-5);
+
+  --font-sans: var(--font-geist-sans), ui-sans-serif, system-ui, sans-serif;
+  --font-mono: var(--font-geist-mono), ui-monospace, monospace;
+  --font-display: var(--font-roboto-slab), ui-serif, Georgia, serif;
+
+  --radius-card: 10px;
+  --radius-btn: 6px;
+
+  --shadow-soft: var(--shadow-soft);
+  --shadow-pop: var(--shadow-pop);
+}
+
+body {
+  background: var(--paper);
+  color: var(--ink);
+  font-family: var(--font-geist-sans), ui-sans-serif, system-ui, sans-serif;
+  font-size: 14px;
+  -webkit-font-smoothing: antialiased;
+}
+
+::selection {
+  background: rgba(26, 90, 117, 0.18);
+}
+
+/* Numeric values sit in Geist Mono with tabular figures so columns align. */
+.numeric {
+  font-family: var(--font-geist-mono), ui-monospace, monospace;
+  font-variant-numeric: tabular-nums;
+}

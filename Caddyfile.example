@@ -1,0 +1,19 @@
+# Copy to `Caddyfile` and fill in the two placeholders below.
+#
+# 1. Domain: if you own one, point an A record at your VPS's IP and use it
+#    here. No domain? Use <your-ip-with-dots-replaced-by-dashes>.sslip.io
+#    instead (e.g. 203.0.113.9 -> 203-0-113-9.sslip.io) — it resolves to the
+#    IP automatically, no DNS setup needed, and Caddy can still get it a real
+#    certificate.
+#
+# 2. Password hash: generate with
+#      docker run --rm caddy:2 caddy hash-password
+#    (it will prompt you to type a password, then print the hash — paste
+#    that hash below, not the password itself).
+
+your-domain-or-ip.sslip.io {
+	basicauth * {
+		youruser JDJhJDE0JHJlcGxhY2UtbWUtd2l0aC1yZWFsLWhhc2g
+	}
+	reverse_proxy app:3000
+}

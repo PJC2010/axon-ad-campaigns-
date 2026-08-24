@@ -1,0 +1,11 @@
+node_modules
+.next
+data
+.git
+.screenshots
+*.log
+.env
+.env.local
+.env*.local
+tests
+db/migrations/*.sql.bak
