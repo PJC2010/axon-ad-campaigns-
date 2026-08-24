@@ -1,0 +1,39 @@
+# Self-host stack: the app (built from the repo's Dockerfile) behind Caddy,
+# which terminates HTTPS and gates access with HTTP basic auth. The app
+# container is never bound to the host network — only Caddy is reachable
+# from outside, on 80/443.
+#
+# Setup: see the "Self-hosting on your own server" section in README.md.
+
+services:
+  app:
+    build: .
+    container_name: axon-ad-campaigns
+    restart: unless-stopped
+    expose:
+      - "3000"
+    volumes:
+      - axon_data:/data
+    env_file:
+      - .env
+    environment:
+      DATA_DIR: /data
+
+  caddy:
+    image: caddy:2
+    container_name: axon-caddy
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy_data:/data
+      - caddy_config:/config
+    depends_on:
+      - app
+
+volumes:
+  axon_data:
+  caddy_data:
+  caddy_config:

@@ -46,5 +46,8 @@ data/
 # local env
 .env
 
+# self-host reverse proxy config (contains your real domain + password hash)
+Caddyfile
+
 # verification screenshots
 .screenshots/

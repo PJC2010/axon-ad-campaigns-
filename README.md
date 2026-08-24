@@ -35,6 +35,40 @@ Optional integrations go in `.env` (copy `.env.example`):
 
 Your data stays in `data/` (gitignored): the database at `data/app.db`, uploaded creatives under `data/uploads/`.
 
+## Self-hosting on your own server
+
+The app has no built-in login, so don't expose it directly to the internet — put it behind the reverse proxy setup below, which adds HTTPS and a basic-auth gate. Needs a VPS with at least ~1–2 GB RAM (the Docker build is memory-hungry; add a swap file on a smaller box).
+
+```bash
+# 1. Install Docker (official script; supports most major distros)
+curl -fsSL https://get.docker.com | sudo sh
+sudo usermod -aG docker $USER   # log out/in (or `newgrp docker`) after this
+
+# 2. Get the code
+git clone https://github.com/PJC2010/axon-ad-campaigns-.git
+cd axon-ad-campaigns-
+
+# 3. Optional: Claude / Meta credentials (fine to leave blank for now)
+cp .env.example .env
+nano .env
+
+# 4. Generate a basic-auth password hash
+docker run --rm caddy:2 caddy hash-password
+# type a password when prompted; copy the hash it prints (not the password)
+
+# 5. Configure the reverse proxy
+cp Caddyfile.example Caddyfile
+nano Caddyfile   # set your domain (or <ip-with-dashes>.sslip.io — see comments), username, and the hash from step 4
+
+# 6. Build and start
+docker compose up -d --build
+docker compose logs -f app   # watch for "Ready", then Ctrl+C
+```
+
+Visit `https://your-domain/` — your browser will prompt for the basic-auth username/password from step 4/5. Make sure ports 80 and 443 are open in your VPS's firewall/security group; port 3000 is never exposed to the host, only reachable inside Docker's network by Caddy.
+
+**Updating:** `git pull && docker compose up -d --build` — rebuilds the app image and restarts it; the `axon_data` volume (database + creative uploads) persists across rebuilds.
+
 ### Scripts
 
 | Command | What it does |
